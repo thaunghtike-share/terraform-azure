@@ -1,0 +1,41 @@
+name: Generate Terraform Docs
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install terraform-docs
+        run: |
+          VERSION=$(curl --silent "https://api.github.com/repos/terraform-docs/terraform-docs/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+          curl -sSL "https://github.com/terraform-docs/terraform-docs/releases/download/v${VERSION}/terraform-docs-v${VERSION}-linux-amd64.tar.gz" -o terraform-docs.tar.gz
+          tar -xzf terraform-docs.tar.gz
+          chmod +x terraform-docs
+          sudo mv terraform-docs /usr/local/bin/
+          terraform-docs --version
+
+      - name: Generate terraform-docs markdown section
+        run: terraform-docs markdown table . > terraform-docs.md
+
+      - name: Combine usage.md and terraform-docs.md
+        run: |
+          echo "" > README.md
+          cat usage.md >> README.md
+          echo -e "\n---\n" >> README.md
+          echo '<!-- BEGIN_TF_DOCS -->' >> README.md
+          cat terraform-docs.md >> README.md
+          echo '<!-- END_TF_DOCS -->' >> README.md
+
+      - name: Auto-commit updated README.md
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: update README with terraform-docs"
+          file_pattern: README.md

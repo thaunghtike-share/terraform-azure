@@ -1,0 +1,19 @@
+# Local .terraform directories
+**/.terraform/*
+
+# But do NOT ignore root-level .terraform-docs.yaml
+!/.terraform-docs.yaml
+
+# Terraform lockfile
+.terraform.lock.hcl
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+*.tfplan
+
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+/example/.terraform/
